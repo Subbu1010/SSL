@@ -1,0 +1,31 @@
+# Development Configuration
+server:
+  port: 8080
+
+# External API Configuration for Development
+external:
+  api:
+    base-url: https://dev-external-api.example.com
+    endpoint: /api/v1/password
+    timeout: 30
+
+# mTLS Configuration for Development
+mtls:
+  client:
+    keystore:
+      path: ./certs/dev-client-keystore.p12
+      password: devpassword
+      type: PKCS12
+  truststore:
+    path: ./certs/dev-truststore.jks
+    password: devpassword
+    type: JKS
+  verify-hostname: false
+
+# Logging for Development
+logging:
+  level:
+    com.example.mtlspasswordservice: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.hc.client5.http: DEBUG
+    org.apache.hc.client5.http.ssl: DEBUG

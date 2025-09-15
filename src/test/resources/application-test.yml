@@ -1,0 +1,29 @@
+# Test Configuration
+server:
+  port: 0  # Random port for tests
+
+# External API Configuration for Tests
+external:
+  api:
+    base-url: https://test-external-api.example.com
+    endpoint: /api/v1/password
+    timeout: 10
+
+# mTLS Configuration for Tests (using mock certificates)
+mtls:
+  client:
+    keystore:
+      path: ./test-certs/test-client-keystore.p12
+      password: testpassword
+      type: PKCS12
+  truststore:
+    path: ./test-certs/test-truststore.jks
+    password: testpassword
+    type: JKS
+  verify-hostname: false
+
+# Logging for Tests
+logging:
+  level:
+    com.example.mtlspasswordservice: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG

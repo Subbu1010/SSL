@@ -1,0 +1,33 @@
+# Production Configuration
+server:
+  port: 8080
+
+# External API Configuration for Production
+external:
+  api:
+    base-url: ${EXTERNAL_API_BASE_URL}
+    endpoint: ${EXTERNAL_API_ENDPOINT:/api/v1/password}
+    timeout: ${EXTERNAL_API_TIMEOUT:30}
+
+# mTLS Configuration for Production
+mtls:
+  client:
+    keystore:
+      path: ${MTLS_CLIENT_KEYSTORE_PATH}
+      password: ${MTLS_CLIENT_KEYSTORE_PASSWORD}
+      type: ${MTLS_CLIENT_KEYSTORE_TYPE:PKCS12}
+  truststore:
+    path: ${MTLS_TRUSTSTORE_PATH}
+    password: ${MTLS_TRUSTSTORE_PASSWORD}
+    type: ${MTLS_TRUSTSTORE_TYPE:JKS}
+  verify-hostname: ${MTLS_VERIFY_HOSTNAME:true}
+
+# Logging for Production
+logging:
+  level:
+    com.example.mtlspasswordservice: INFO
+    org.springframework.web.client.RestTemplate: WARN
+    org.apache.hc.client5.http: WARN
+    org.apache.hc.client5.http.ssl: WARN
+  file:
+    name: /var/log/mtls-password-service/application.log

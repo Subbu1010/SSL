@@ -1,0 +1,65 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: mtls-password-service
+  
+  # Jackson configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+
+# External API Configuration
+external:
+  api:
+    base-url: ${EXTERNAL_API_BASE_URL:https://external-api.example.com}
+    endpoint: ${EXTERNAL_API_ENDPOINT:/api/v1/password}
+    timeout: ${EXTERNAL_API_TIMEOUT:30}
+
+# mTLS Configuration
+mtls:
+  client:
+    keystore:
+      path: ${MTLS_CLIENT_KEYSTORE_PATH:/etc/ssl/certs/client-keystore.p12}
+      password: ${MTLS_CLIENT_KEYSTORE_PASSWORD:changeit}
+      type: ${MTLS_CLIENT_KEYSTORE_TYPE:PKCS12}
+  truststore:
+    path: ${MTLS_TRUSTSTORE_PATH:/etc/ssl/certs/truststore.jks}
+    password: ${MTLS_TRUSTSTORE_PASSWORD:changeit}
+    type: ${MTLS_TRUSTSTORE_TYPE:JKS}
+  verify-hostname: ${MTLS_VERIFY_HOSTNAME:true}
+
+# Logging Configuration
+logging:
+  level:
+    com.example.mtlspasswordservice: INFO
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.hc.client5.http: DEBUG
+    org.apache.hc.client5.http.ssl: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Application Info
+info:
+  app:
+    name: MTLS Password Service
+    description: Spring Boot microservice for retrieving user passwords via mTLS secured external API
+    version: 1.0.0

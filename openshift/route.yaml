@@ -1,0 +1,18 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mtls-password-service
+  labels:
+    app: mtls-password-service
+spec:
+  host: mtls-password-service.apps.example.com
+  to:
+    kind: Service
+    name: mtls-password-service
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

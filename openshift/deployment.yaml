@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mtls-password-service
+  labels:
+    app: mtls-password-service
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mtls-password-service
+  template:
+    metadata:
+      labels:
+        app: mtls-password-service
+        version: v1
+    spec:
+      serviceAccountName: mtls-password-service
+      containers:
+      - name: mtls-password-service
+        image: mtls-password-service:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: EXTERNAL_API_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mtls-password-service-config
+              key: external-api-base-url
+        - name: EXTERNAL_API_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: mtls-password-service-config
+              key: external-api-endpoint
+        - name: EXTERNAL_API_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: mtls-password-service-config
+              key: external-api-timeout
+        - name: MTLS_CLIENT_KEYSTORE_PATH
+          value: "/etc/ssl/certs/client-keystore.p12"
+        - name: MTLS_CLIENT_KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mtls-password-service-secrets
+              key: client-keystore-password
+        - name: MTLS_CLIENT_KEYSTORE_TYPE
+          value: "PKCS12"
+        - name: MTLS_TRUSTSTORE_PATH
+          value: "/etc/ssl/certs/truststore.jks"
+        - name: MTLS_TRUSTSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mtls-password-service-secrets
+              key: truststore-password
+        - name: MTLS_TRUSTSTORE_TYPE
+          value: "JKS"
+        - name: MTLS_VERIFY_HOSTNAME
+          value: "true"
+        volumeMounts:
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs
+          readOnly: true
+        - name: logs
+          mountPath: /var/log/mtls-password-service
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/status
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/status
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: ssl-certs
+        secret:
+          secretName: mtls-password-service-ssl-certs
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mtls-password-service
+  labels:
+    app: mtls-password-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    app: mtls-password-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mtls-password-service
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-password-service-config
+data:
+  external-api-base-url: "https://external-api.example.com"
+  external-api-endpoint: "/api/v1/password"
+  external-api-timeout: "30"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mtls-password-service-secrets
+type: Opaque
+stringData:
+  client-keystore-password: "changeit"
+  truststore-password: "changeit"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mtls-password-service-ssl-certs
+type: Opaque
+data:
+  # Base64 encoded certificates - replace with actual certificates
+  client-keystore.p12: ""  # Replace with base64 encoded client keystore
+  truststore.jks: ""       # Replace with base64 encoded truststore

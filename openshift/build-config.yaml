@@ -1,0 +1,29 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: mtls-password-service
+  labels:
+    app: mtls-password-service
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/your-org/mtls-password-service.git
+      ref: main
+    contextDir: /
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: mtls-password-service:latest
+  triggers:
+  - type: ConfigChange
+  - type: ImageChange
+    imageChange: {}
+  - type: GitHub
+    github:
+      secret: github-webhook-secret
+  runPolicy: Serial
